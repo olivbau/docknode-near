@@ -43,6 +43,6 @@ ufw enable
 ```bash
 docker compose pull
 docker compose up -d
-docker logs -f nearcore --since 1m
+docker logs -f docknode-near-nearcore-1 --since 1m
 docker compose down
 ```
