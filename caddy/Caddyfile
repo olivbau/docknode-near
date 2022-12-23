@@ -1,0 +1,13 @@
+{$HOST} {
+        basicauth /* {
+                {$BASIC_AUTH_USERS}
+        }
+        reverse_proxy nearcore:3030
+}
+
+{$HOST}:9100 {
+        basicauth /* {
+                {$BASIC_AUTH_USERS}
+        }
+        reverse_proxy nodeexporter:9100
+}

@@ -1,0 +1,60 @@
+version: "3.8"
+
+networks:
+  docknode-apt:
+    driver: bridge
+
+volumes:
+  nearcore_data: {}
+  caddy_data: {}
+  caddy_config: {}
+
+services:
+  nearcore:
+    image: "nearprotocol/nearcore:1.30.0"
+    restart: unless-stopped
+    volumes:
+      - nearcore_data:/srv/near
+    ports:
+      - 24567:24567/tcp
+    environment:
+      - INIT=true
+      - CHAIN_ID=mainnet
+    expose:
+      - 3030
+    networks:
+      - docknode-apt
+
+  nodeexporter:
+    image: prom/node-exporter:v1.4.0
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    expose:
+      - 9100
+    networks:
+      - docknode-apt
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    ports:
+      - "80:80"
+      - "443:443"
+      - "9100:9100"
+    environment:
+      - BASIC_AUTH_USERS=${BASIC_AUTH_USERS:?err}
+      - HOST=${HOST:?err}
+    networks:
+      - docknode-apt
